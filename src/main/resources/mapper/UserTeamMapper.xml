@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lc.usercenter.mapper.UserTeamMapper">
+
+    <resultMap id="BaseResultMap" type="com.lc.usercenter.model.domain.UserTeam">
+            <id property="tauId" column="tauId" jdbcType="BIGINT"/>
+            <result property="teamId" column="teamId" jdbcType="BIGINT"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="jionTime" column="jionTime" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tauId,teamId,userId,
+        jionTime,createTime,updateTime,
+        isDelete
+    </sql>
+
+    <select id="selectUsers" resultType="com.lc.usercenter.model.domain.User">
+            SELECT * from user
+                left join user_team ut on user.id = ut.userId
+                where user.id = ut
+    </select>
+</mapper>
