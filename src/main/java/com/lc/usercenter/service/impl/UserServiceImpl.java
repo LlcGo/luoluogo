@@ -11,6 +11,8 @@ import com.lc.usercenter.common.ErrorCode;
 import com.lc.usercenter.model.domain.User;
 import com.lc.usercenter.service.UserService;
 import com.lc.usercenter.mapper.UserMapper;
+import com.lc.usercenter.utils.Aig;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -249,6 +248,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return null;
         }
         return (User)req.getSession().getAttribute(USER_LOGIN_STATE);
+    }
+
+    @Override
+    public List<User> matchUsers(long num, User loginUser) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id","tags");
+        queryWrapper.isNotNull("tags");
+        List<User> userList = this.list(queryWrapper);
+        String tags = loginUser.getTags();
+        Gson gson = new Gson();
+        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+        }.getType());
+        //用户id当下标
+        ArrayList<Pair<User,Long>> list = new ArrayList<>();
+        for (int i = 0; i < userList.size(); i++) {
+            User user = userList.get(i);
+            String tagUser = user.getTags();
+            if(StringUtils.isBlank(tagUser) || loginUser.getId() == user.getId()){
+                continue;
+            }
+            List<String> userTagLists = gson.fromJson(tagUser, new TypeToken<List<String>>() {
+            }.getType());
+            long distance = Aig.minDistance(tagList, userTagLists);
+            list.add(new Pair<>(user,distance));
+        }
+        List<Pair<User, Long>> pairList = list.stream()
+                .sorted((a, b) -> (int) (a.getValue() - b.getValue()))
+                .limit(num)
+                .collect(Collectors.toList());
+        return pairList.stream().map(Pair::getKey).collect(Collectors.toList());
     }
 
 }

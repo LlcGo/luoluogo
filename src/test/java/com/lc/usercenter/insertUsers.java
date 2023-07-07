@@ -1,13 +1,13 @@
 package com.lc.usercenter;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.lc.usercenter.model.domain.User;
 import com.lc.usercenter.service.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +26,8 @@ import javax.annotation.Resource;
 public class insertUsers {
     @Resource
     private UserService userService;
+
+
 
     /**
      * 多线程并发执行
@@ -78,6 +80,49 @@ public class insertUsers {
         System.out.println(stopWatch.getTotalTimeMillis());
     }
 
+
+//    @Test
+//    public void Thread(){
+//        ExecutorService pool = Executors.newFixedThreadPool(100);
+//        final int totalPageNo = 50; //分50批次
+//
+//        final int pageSize = 20000; //每页大小是2万条
+//        //共10w条数据，每页5000条数据，20个线程
+//        final long start = System.currentTimeMillis();
+//        final AtomicInteger atomicInt = new AtomicInteger();
+//        for (int currentPageNo = 0; currentPageNo < totalPageNo; currentPageNo++) {
+//            final int finalCurrentPageNo = currentPageNo;
+//
+//            Runnable run = new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    List userList = new ArrayList<>();
+//                    for (int i = 1; i <= pageSize; i++) {
+//                        int id = i + finalCurrentPageNo * pageSize;
+//
+//                        userList.add(user);
+//                    }
+//
+//                    atomicInt.addAndGet(UserBatchHandler.batchSave(userList, Thread.currentThread().getName()));
+//                    //入库的数据达到一百万条的时候就会有个统计.
+//                    if (atomicInt.get() == (totalPageNo * pageSize)) {
+//                        //如果有一百万的时候.就会在这里有个结果
+//                        System.out.println("同步数据到db，它已经花费 " + ((System.currentTimeMillis() - start) / 1000) + "  秒");
+//                    }
+//
+//                }
+//            };
+//            try {
+//                Thread.sleep(5);
+//            } catch (InterruptedException e) {
+//
+//                e.printStackTrace();
+//            }
+//            pool.execute(run);
+//        }
+//
+//    }
 
 
     @Test

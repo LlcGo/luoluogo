@@ -64,4 +64,12 @@ public interface UserService extends IService<User> {
      * 获取当前的是哪个用户登录
      */
     User getLoginUser(HttpServletRequest req);
+
+    /**
+     * 算法推荐用户
+     * @param num
+     * @param loginUser
+     * @return
+     */
+    List<User> matchUsers(long num, User loginUser);
 }
