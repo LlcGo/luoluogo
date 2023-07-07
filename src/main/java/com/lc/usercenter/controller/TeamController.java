@@ -8,21 +8,23 @@ import com.lc.usercenter.common.ResponsUtil;
 import com.lc.usercenter.exception.BusinessException;
 import com.lc.usercenter.model.domain.Team;
 import com.lc.usercenter.model.domain.User;
+
+import com.lc.usercenter.model.domain.UserTeam;
 import com.lc.usercenter.model.dto.TeamQuery;
-import com.lc.usercenter.model.requset.JoinTeamRequset;
-import com.lc.usercenter.model.requset.QuitTeamRequest;
-import com.lc.usercenter.model.requset.TeamAddRequest;
-import com.lc.usercenter.model.requset.TeamUpdateRequest;
+import com.lc.usercenter.model.requset.*;
 import com.lc.usercenter.model.vo.TeamVo;
 import com.lc.usercenter.service.TeamService;
 import com.lc.usercenter.service.UserService;
+import com.lc.usercenter.service.UserTeamService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import sun.dc.pr.PRError;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.lc.usercenter.contact.UserContant.USER_LOGIN_STATE;
 
@@ -39,6 +41,9 @@ public class TeamController {
 
     @Resource
     private TeamService teamService;
+
+    @Resource
+    private UserTeamService userTeamService;
 
     @PostMapping("/add")
     private BaseRespons<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request){
@@ -98,7 +103,7 @@ public class TeamController {
 
     //根据相对的信息查询 队伍 并且这些队伍里面的人
     @GetMapping("/list")
-    private BaseRespons<List<TeamVo>> listTeams(TeamQuery teamQuery,HttpServletRequest request){
+    private BaseRespons<List<TeamVo>> listTeams(TeamQuery teamQuery, HttpServletRequest request){
         if(teamQuery == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -109,7 +114,6 @@ public class TeamController {
         }
         return ResponsUtil.success(teamList);
     }
-
 
     @GetMapping("/list/page")
     private BaseRespons<Page<Team>> page(TeamQuery teamQuery){
@@ -154,7 +158,11 @@ public class TeamController {
     }
 
     @PostMapping("/delete")
-    private BaseRespons<Boolean> deleteTeam(@RequestBody long id,HttpServletRequest request){
+    private BaseRespons<Boolean> deleteTeam(@RequestBody DeleteTeamRequest deleteTeamRequest, HttpServletRequest request){
+        if(deleteTeamRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = deleteTeamRequest.getId();
         if(id <= 0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -165,4 +173,37 @@ public class TeamController {
         }
         return ResponsUtil.success(true);
     }
+
+    @GetMapping("/list/my/team")
+    private BaseRespons<List<TeamVo>> listMyCreatTeams(TeamQuery teamQuery, HttpServletRequest request){
+        if(teamQuery == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        teamQuery.setUserId(loginUser.getId());
+        List<TeamVo> teamList = teamService.listTeams(teamQuery,true);
+        if(teamList == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"查询数据为null");
+        }
+        return ResponsUtil.success(teamList);
+    }
+
+    @GetMapping("/list/join/team")
+    private BaseRespons<List<TeamVo>> listMyJoinTeams(TeamQuery teamQuery, HttpServletRequest request){
+        if(teamQuery == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", loginUser.getId());
+        List<UserTeam> myJoinTeamList = userTeamService.list(queryWrapper);
+        ArrayList<Long> idLists = new ArrayList<Long>(myJoinTeamList.stream().collect(Collectors.groupingBy(UserTeam::getUserId)).keySet());
+        teamQuery.setIdList(idLists);
+        List<TeamVo> teamList = teamService.listTeams(teamQuery,true);
+        if(teamList == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"查询数据为null");
+        }
+        return ResponsUtil.success(teamList);
+    }
+
 }

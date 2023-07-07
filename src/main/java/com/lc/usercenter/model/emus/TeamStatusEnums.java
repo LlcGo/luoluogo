@@ -37,7 +37,7 @@ public enum TeamStatusEnums {
 
     public static TeamStatusEnums getEnumBystatus(Integer status){
         if(status == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数不正常");
+            return null;
         }
         TeamStatusEnums[] values = TeamStatusEnums.values();
         for (TeamStatusEnums statusEnums : values) {

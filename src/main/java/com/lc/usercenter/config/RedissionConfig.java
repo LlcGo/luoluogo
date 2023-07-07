@@ -3,6 +3,7 @@ package com.lc.usercenter.config;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
+import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,5 +36,8 @@ public class RedissionConfig {
         RedissonClient redisson = Redisson.create(config);
         return  redisson;
     }
+
+
+
 
 }

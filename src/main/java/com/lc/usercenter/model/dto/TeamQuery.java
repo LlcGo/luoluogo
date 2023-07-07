@@ -1,12 +1,12 @@
 package com.lc.usercenter.model.dto;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.lc.usercenter.common.RequestPage;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author Lc
@@ -58,4 +58,8 @@ public class TeamQuery extends RequestPage {
     private Date expireTime;
 
 
+    /**
+     * 加入的队伍id
+     */
+    private List<Long> idList;
 }

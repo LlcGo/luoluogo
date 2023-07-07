@@ -3,6 +3,11 @@ package com.lc.usercenter.contact;
 public interface UserContant {
 
     /**
+     * bloom 测试
+     */
+    String KEY_RBLOOM = "BloomFilter";
+
+    /**
      * 用户登录键
      */
     String USER_LOGIN_STATE = "userLoginState";
