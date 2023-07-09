@@ -29,13 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.lc.usercenter.common.ErrorCode.NOT_ROLE;
+import static com.lc.usercenter.common.ErrorCode.PARAMS_ERROR;
 
 /**
  *
@@ -137,16 +135,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             if(enumBystatus == null){
                 enumBystatus = TeamStatusEnums.PUBLICE;
             }
-            if(!isAdmin && !enumBystatus.equals(TeamStatusEnums.PUBLICE)){
+            if(!isAdmin && enumBystatus.equals(TeamStatusEnums.ENCIPHER)){
                 throw new BusinessException(NOT_ROLE);
             }
             queryWrapper.eq(Team::getTeamStatus,enumBystatus.getStatus());
 
-//            if(isAdmin){
-//                queryWrapper.eq(enumBystatus != null, Team::getTeamStatus,teamStatus);
-//            }else {
-//                queryWrapper.eq(enumBystatus != null && enumBystatus.getStatus() == 0,Team::getTeamStatus,teamStatus);
-//            }
         }
 
         queryWrapper.and(qw -> qw.gt(Team::getExpireTime,new Date()).or().isNull(Team::getExpireTime));
@@ -246,11 +239,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         String teamPassword = joinTeamRequset.getTeamPassword();
         Optional.ofNullable(teamPassword).orElse("没有设置密码");
         if(TeamStatusEnums.ENCIPHER.equals(enumBystatus) && !teamPassword.equals(joinTeam.getTeamPassword())){
-            throw new BusinessException(NOT_ROLE,"请输入正确密码");
+            throw new BusinessException(PARAMS_ERROR,"请输入正确密码");
         }
         //（2）如果是私密不能加入
         if(TeamStatusEnums.PRIVER.equals(enumBystatus)){
-            throw new BusinessException(NOT_ROLE,"队伍为私密,不允许加入");
+            throw new BusinessException(PARAMS_ERROR,"队伍为私密,不允许加入");
         }
 
 
@@ -381,6 +374,28 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
         //5.删除队伍
         return this.removeById(teamId);
+    }
+
+    @Override
+    public void intoHasJoin(HttpServletRequest request, List<TeamVo> teamList) {
+        List<Long> resultTeamIdList = teamList.stream().map(TeamVo::getTeamId).collect(Collectors.toList());
+        User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw  new BusinessException(ErrorCode.NOT_ROLE);
+        }
+        long userId = loginUser.getId();
+        //根据id 和 现在查出来的 队伍 id 查出自己加入了那几个队伍
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId",userId);
+        queryWrapper.in("teamId",resultTeamIdList);
+        Set<Long> joinTeamSet = userTeamService.list(queryWrapper).stream()
+                .map(UserTeam::getTeamId)
+                .collect(Collectors.toSet());
+        //所有查出的队伍id是否存在 在 这个队伍的id中
+        teamList.forEach(teamVo -> {
+            boolean hasJoin = joinTeamSet.contains(teamVo.getTeamId());
+            teamVo.setJoinTeam(hasJoin);
+        });
     }
 }
 
