@@ -23,7 +23,9 @@ import sun.dc.pr.PRError;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.lc.usercenter.contact.UserContant.USER_LOGIN_STATE;
@@ -101,7 +103,7 @@ public class TeamController {
 //        return ResponsUtil.success(teamList);
 //    }
 
-    //根据相对的信息查询 队伍 并且这些队伍里面的人
+    //根据相对的信息查询 队伍 并且这些队伍里面的人数量
     @GetMapping("/list")
     private BaseRespons<List<TeamVo>> listTeams(TeamQuery teamQuery, HttpServletRequest request){
         if(teamQuery == null){
@@ -112,8 +114,11 @@ public class TeamController {
         if(teamList == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"查询数据为null");
         }
+        teamService.intoHasJoin(request,teamList);
         return ResponsUtil.success(teamList);
     }
+
+
 
     @GetMapping("/list/page")
     private BaseRespons<Page<Team>> page(TeamQuery teamQuery){
@@ -185,6 +190,7 @@ public class TeamController {
         if(teamList == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"查询数据为null");
         }
+        teamService.intoHasJoin(request,teamList);
         return ResponsUtil.success(teamList);
     }
 
@@ -203,6 +209,7 @@ public class TeamController {
         if(teamList == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"查询数据为null");
         }
+        teamService.intoHasJoin(request,teamList);
         return ResponsUtil.success(teamList);
     }
 

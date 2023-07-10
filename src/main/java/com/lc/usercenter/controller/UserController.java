@@ -64,7 +64,7 @@ public class UserController {
     @PostMapping("/login")
     public BaseRespons<User> Login(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
         if(userLoginRequest == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
+            throw new BusinessException(ErrorCode.NOT_ROLE,"参数为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
@@ -89,7 +89,7 @@ public class UserController {
         Object o = req.getSession().getAttribute(USER_LOGIN_STATE);
         User currUser = (User)o;
         if(currUser == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
+            throw new BusinessException(ErrorCode.NOT_ROLE,"参数为空");
         }
         Long userId = currUser.getId();
         User user = userService.getById(userId);
@@ -190,6 +190,9 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_ROLE);
+        }
         return ResponsUtil.success(userService.matchUsers(num,loginUser));
     }
 

@@ -25,6 +25,8 @@ public class TestAigUtil {
         List<String> strings2 = Arrays.asList("java","男","大一","乒乓");
         List<String> strings3 = Arrays.asList("java","大三","女");
         int i1 = Aig.minDistance(strings1, strings2);
-        System.out.println(i1);
+        int i2 = Aig.minDistance(strings1, strings3);
+        System.out.println(strings1.equals(strings3));
+        System.out.println(i2);
     }
 }

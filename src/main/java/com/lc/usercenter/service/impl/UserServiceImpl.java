@@ -15,6 +15,7 @@ import com.lc.usercenter.utils.Aig;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -260,7 +261,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Gson gson = new Gson();
         List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
         }.getType());
-        //用户id当下标
+        //long 为 分数
         ArrayList<Pair<User,Long>> list = new ArrayList<>();
         for (int i = 0; i < userList.size(); i++) {
             User user = userList.get(i);
@@ -277,7 +278,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 .sorted((a, b) -> (int) (a.getValue() - b.getValue()))
                 .limit(num)
                 .collect(Collectors.toList());
-        return pairList.stream().map(Pair::getKey).collect(Collectors.toList());
+        //取出每个用户的id 进行查询
+        List<Long> userIds = pairList.stream()
+                .map(p -> p.getKey().getId())
+                .collect(Collectors.toList());
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.in("id",userIds);
+        //查询出了没有顺序的用户
+        Map<Long, List<User>> unOrderUser = this.list(userQueryWrapper)
+                .stream().map(this::getSafeUser)
+                .collect(Collectors.groupingBy(User::getId));
+        ArrayList<User> finalUsers = new ArrayList<>();
+        userIds.forEach(id -> { finalUsers.add(unOrderUser.get(id).get(0));});
+        return finalUsers;
     }
 
 }

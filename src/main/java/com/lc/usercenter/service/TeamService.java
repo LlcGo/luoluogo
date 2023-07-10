@@ -64,4 +64,12 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     boolean deleteTeam(long id, User loginUser);
+
+
+    /**
+     * 给当前查询出来的队伍赋值 是否加入 与 现在加入队伍的人数
+     * @param request
+     * @param teamList
+     */
+    void intoHasJoin(HttpServletRequest request, List<TeamVo> teamList);
 }

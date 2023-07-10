@@ -31,7 +31,7 @@ public class Aig {
                 int left = d[i - 1][j] + 1;
                 int down = d[i][j - 1] + 1;
                 int left_down = d[i - 1][j - 1];
-                if (!Objects.equals(list1.get(i - 1),(list2.get(j - 1)) ))
+                if (!Objects.equals(list1.get(i - 1),(list2.get(j - 1))))
                     left_down += 1;
                 d[i][j] = Math.min(left, Math.min(down, left_down));
             }
